@@ -100,3 +100,25 @@ async function addToCart() {
   uiStore.toast(`${props.product.name} added to cart!`)
 }
 </script>
+
+<style scoped>
+.product-card {
+  transition: transform .28s cubic-bezier(.34, 1.2, .64, 1), box-shadow .28s ease !important;
+}
+.product-card:hover {
+  transform: translateY(-6px) !important;
+  box-shadow: 0 16px 36px rgba(108,99,255,.18) !important;
+}
+
+.btn-primary.rounded-pill {
+  transition: transform .2s cubic-bezier(.34, 1.56, .64, 1), box-shadow .2s;
+}
+.btn-primary.rounded-pill:hover:not(:disabled) {
+  transform: scale(1.12);
+  box-shadow: 0 4px 14px rgba(108,99,255,.5);
+}
+
+.wishlist-btn { transition: color .2s, transform .3s cubic-bezier(.34, 1.56, .64, 1); }
+.wishlist-btn.active { transform: scale(1.15); }
+.wishlist-btn:hover  { transform: scale(1.1); }
+</style>
