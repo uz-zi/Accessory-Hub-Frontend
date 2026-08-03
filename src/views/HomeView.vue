@@ -27,7 +27,7 @@
                   <h1 class="slide-heading">{{ slide.heading }}</h1>
                   <p class="slide-desc">{{ slide.desc }}</p>
                   <div class="slide-actions">
-                    <RouterLink :to="slide.link" class="btn btn-primary btn-lg px-5 btn-glow">
+                    <RouterLink :to="hpStore.slideLink(slide)" class="btn btn-primary btn-lg px-5 btn-glow">
                       {{ slide.cta }} <i class="bi bi-arrow-right ms-2"></i>
                     </RouterLink>
                     <RouterLink :to="{ name: 'products' }" class="btn btn-outline-light btn-lg px-4">
@@ -266,46 +266,15 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { useProductsStore } from '@/stores/products'
+import { useHomepageStore } from '@/stores/homepage'
 import ProductCard from '@/components/ProductCard.vue'
 
 const productsStore = useProductsStore()
 
 /* ── Data ── */
-const slides = [
-  {
-    tag: 'New Collection 2025',
-    heading: 'Protect Your Phone\nin Style',
-    desc: 'Ultra-slim cases engineered for drop protection without the bulk. Over 200 designs to match your personality.',
-    cta: 'Shop Cases',
-    link: { name: 'products', query: { category: 'cases' } },
-    bg: 'https://picsum.photos/seed/phonecase1/1920/900',
-  },
-  {
-    tag: 'True Wireless Audio',
-    heading: 'Sound That Moves\nWith You',
-    desc: 'Premium earbuds with active noise cancellation, 36-hour battery life, and studio-quality sound.',
-    cta: 'Shop Earbuds',
-    link: { name: 'products', query: { category: 'earbuds' } },
-    bg: 'https://picsum.photos/seed/earbuds2025/1920/900',
-  },
-  {
-    tag: 'Fast Charging Tech',
-    heading: 'Power Up in\nMinutes, Not Hours',
-    desc: 'GaN chargers and USB-C cables delivering up to 140W. Compatible with every device you own.',
-    cta: 'Shop Chargers',
-    link: { name: 'products', query: { category: 'chargers' } },
-    bg: 'https://picsum.photos/seed/chargertech/1920/900',
-  },
-]
-
-const categories = [
-  { name: 'Cases',         slug: 'cases',            emoji: '📱', bg: 'linear-gradient(135deg,#667eea,#764ba2)' },
-  { name: 'Chargers',      slug: 'chargers',          emoji: '⚡', bg: 'linear-gradient(135deg,#f7971e,#ffd200)' },
-  { name: 'Earbuds',       slug: 'earbuds',           emoji: '🎧', bg: 'linear-gradient(135deg,#11998e,#38ef7d)' },
-  { name: 'Screen Guards', slug: 'screen-protectors', emoji: '🛡️', bg: 'linear-gradient(135deg,#4facfe,#00f2fe)' },
-  { name: 'Mounts',        slug: 'mounts',            emoji: '🚗', bg: 'linear-gradient(135deg,#f953c6,#b91d73)' },
-  { name: 'Cables',        slug: 'cables',            emoji: '🔌', bg: 'linear-gradient(135deg,#0f2027,#203a43,#2c5364)' },
-]
+const hpStore    = useHomepageStore()
+const slides     = computed(() => hpStore.slides)
+const categories = computed(() => hpStore.categories)
 
 const trustItems = [
   { icon: 'bi-truck',             label: 'Free Shipping',    sub: 'On orders over $50'  },
@@ -332,8 +301,8 @@ let   timerID     = null
 const DURATION    = 5000
 
 function go(i)  { activeSlide.value = i; resetTimer() }
-function next() { activeSlide.value = (activeSlide.value + 1) % slides.length; resetTimer() }
-function prev() { activeSlide.value = (activeSlide.value - 1 + slides.length) % slides.length; resetTimer() }
+function next() { activeSlide.value = (activeSlide.value + 1) % slides.value.length; resetTimer() }
+function prev() { activeSlide.value = (activeSlide.value - 1 + slides.value.length) % slides.value.length; resetTimer() }
 
 function startTimer() {
   timerID = setInterval(() => {
