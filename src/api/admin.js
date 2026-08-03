@@ -45,4 +45,12 @@ export const adminApi = {
     api.get(`/admin/users/${id}`),
   updateUserRole: (id, role) =>
     api.patch(`/admin/users/${id}/update_role`, { role }),
+
+  // Homepage config
+  getHomepageConfig: () =>
+    api.get('/admin/homepage'),
+  updateHomepageSlides: (slides) =>
+    api.put('/admin/homepage/slides', { slides }),
+  updateHomepageCategories: (categories) =>
+    api.put('/admin/homepage/categories', { categories }),
 }

@@ -46,12 +46,13 @@ import { useAuthStore } from '@/stores/auth'
 const authStore = useAuthStore()
 
 const navItems = [
-  { name: 'admin-dashboard',      icon: 'bi-speedometer2', label: 'Dashboard' },
-  { name: 'admin-products',       icon: 'bi-box-seam',     label: 'Products' },
-  { name: 'admin-product-create', icon: 'bi-plus-circle',  label: 'Add Product' },
-  { name: 'admin-categories',     icon: 'bi-tag',          label: 'Categories' },
-  { name: 'admin-orders',         icon: 'bi-receipt',      label: 'Orders' },
-  { name: 'admin-users',          icon: 'bi-people',       label: 'Users' },
+  { name: 'admin-dashboard',      icon: 'bi-speedometer2',     label: 'Dashboard'        },
+  { name: 'admin-products',       icon: 'bi-box-seam',         label: 'Products'         },
+  { name: 'admin-product-create', icon: 'bi-plus-circle',      label: 'Add Product'      },
+  { name: 'admin-categories',     icon: 'bi-tag',              label: 'Categories'       },
+  { name: 'admin-orders',         icon: 'bi-receipt',          label: 'Orders'           },
+  { name: 'admin-users',          icon: 'bi-people',           label: 'Users'            },
+  { name: 'admin-homepage',       icon: 'bi-house-gear',       label: 'Homepage Manager' },
 ]
 </script>
 
