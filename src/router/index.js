@@ -149,6 +149,12 @@ const routes = [
         name: 'admin-users',
         component: () => import('@/views/admin/UsersView.vue'),
         meta: { title: 'Users – Admin' }
+      },
+      {
+        path: 'homepage',
+        name: 'admin-homepage',
+        component: () => import('@/views/admin/HomepageManagerView.vue'),
+        meta: { title: 'Homepage Manager – Admin' }
       }
     ]
   },
