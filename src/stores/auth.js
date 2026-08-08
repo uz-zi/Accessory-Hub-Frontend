@@ -8,6 +8,7 @@ export const useAuthStore = defineStore('auth', () => {
   const accessToken = ref(null)
   const loading     = ref(false)
   const error       = ref(null)
+  const unverifiedEmail = ref(null) // set when login fails because the account isn't verified yet
 
   const isAuthenticated = computed(() => !!accessToken.value && !!user.value)
   const fullName        = computed(() =>
@@ -42,29 +43,77 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(credentials) {
     loading.value = true
     error.value   = null
+    unverifiedEmail.value = null
     try {
       const { data } = await authApi.login(credentials)
       setTokens(data.access_token, data.refresh_token)
       user.value = data.user
       return true
     } catch (err) {
-      error.value = err.response?.data?.message || 'Login failed. Please try again.'
+      if (err.response?.status === 403) {
+        unverifiedEmail.value = credentials.email
+      }
+      error.value = err.response?.data?.error || err.response?.data?.message || 'Login failed. Please try again.'
       return false
     } finally {
       loading.value = false
     }
   }
 
+  // Registration no longer logs the user in directly — the account must be
+  // verified via the emailed link first (see verifyEmail below).
   async function register(payload) {
     loading.value = true
     error.value   = null
     try {
-      const { data } = await authApi.register(payload)
+      await authApi.register(payload)
+      return true
+    } catch (err) {
+      error.value = err.response?.data?.error || err.response?.data?.message || 'Registration failed. Please try again.'
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function verifyEmail(token) {
+    loading.value = true
+    error.value   = null
+    try {
+      const { data } = await authApi.verifyEmail(token)
       setTokens(data.access_token, data.refresh_token)
       user.value = data.user
       return true
     } catch (err) {
-      error.value = err.response?.data?.message || 'Registration failed. Please try again.'
+      error.value = err.response?.data?.error || 'This verification link is invalid or has expired.'
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function resendVerification(email) {
+    loading.value = true
+    error.value   = null
+    try {
+      await authApi.resendVerification(email)
+      return true
+    } catch (err) {
+      error.value = err.response?.data?.error || 'Request failed.'
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function resetPassword(token, password, passwordConfirmation) {
+    loading.value = true
+    error.value   = null
+    try {
+      await authApi.resetPassword(token, password, passwordConfirmation)
+      return true
+    } catch (err) {
+      error.value = err.response?.data?.error || 'This reset link is invalid or has expired.'
       return false
     } finally {
       loading.value = false
@@ -84,7 +133,7 @@ export const useAuthStore = defineStore('auth', () => {
       await authApi.forgotPassword(email)
       return true
     } catch (err) {
-      error.value = err.response?.data?.message || 'Request failed.'
+      error.value = err.response?.data?.error || err.response?.data?.message || 'Request failed.'
       return false
     } finally {
       loading.value = false
@@ -99,7 +148,7 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = data
       return true
     } catch (err) {
-      error.value = err.response?.data?.message || 'Update failed.'
+      error.value = err.response?.data?.error || err.response?.data?.message || 'Update failed.'
       return false
     } finally {
       loading.value = false
@@ -110,9 +159,9 @@ export const useAuthStore = defineStore('auth', () => {
   window.addEventListener('auth:logout', clearTokens)
 
   return {
-    user, accessToken, loading, error,
+    user, accessToken, loading, error, unverifiedEmail,
     isAuthenticated, fullName,
-    hydrateFromStorage, login, register,
-    logout, forgotPassword, updateProfile, clearTokens
+    hydrateFromStorage, login, register, verifyEmail, resendVerification,
+    logout, forgotPassword, resetPassword, updateProfile, clearTokens
   }
 })

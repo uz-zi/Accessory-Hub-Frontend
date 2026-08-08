@@ -13,8 +13,18 @@ export const authApi = {
   forgotPassword: (email) =>
     api.post('/auth/forgot_password', { email }),
 
-  resetPassword: (token, password) =>
-    api.put('/auth/reset_password', { token, password }),
+  resetPassword: (token, password, passwordConfirmation) =>
+    api.put('/auth/reset_password', {
+      reset_token: token,
+      password,
+      password_confirmation: passwordConfirmation
+    }),
+
+  verifyEmail: (token) =>
+    api.post('/auth/verify_email', { token }),
+
+  resendVerification: (email) =>
+    api.post('/auth/resend_verification', { email }),
 
   getProfile: () =>
     api.get('/auth/me'),

@@ -47,6 +47,18 @@ const routes = [
     component: () => import('@/views/ForgotPasswordView.vue'),
     meta: { title: 'Forgot Password – AccessoryHub', guestOnly: true }
   },
+  {
+    path: '/reset-password',
+    name: 'reset-password',
+    component: () => import('@/views/ResetPasswordView.vue'),
+    meta: { title: 'Reset Password – AccessoryHub', guestOnly: true }
+  },
+  {
+    path: '/verify-email',
+    name: 'verify-email',
+    component: () => import('@/views/VerifyEmailView.vue'),
+    meta: { title: 'Verify Email – AccessoryHub', guestOnly: true }
+  },
 
   // ── Protected ─────────────────────────────────────────────────────────────
   {

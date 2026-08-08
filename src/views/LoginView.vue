@@ -9,9 +9,21 @@
             <p class="text-muted small">Sign in to your AccessoryHub account</p>
           </div>
 
-          <div v-if="authStore.error" class="alert alert-danger d-flex align-items-center gap-2 py-2" role="alert">
-            <i class="bi bi-exclamation-circle-fill"></i>
-            <span>{{ authStore.error }}</span>
+          <div v-if="authStore.error" class="alert alert-danger py-2" role="alert">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-exclamation-circle-fill"></i>
+              <span>{{ authStore.error }}</span>
+            </div>
+            <div v-if="authStore.unverifiedEmail" class="mt-2">
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-danger"
+                :disabled="authStore.loading || resendSent"
+                @click="handleResend"
+              >
+                {{ resendSent ? 'Verification link sent' : 'Resend verification email' }}
+              </button>
+            </div>
           </div>
 
           <form @submit.prevent="handleLogin">
@@ -83,15 +95,24 @@ const authStore = useAuthStore()
 const form     = ref({ email: '', password: '' })
 const showPass = ref(false)
 const rememberMe = ref(false)
+const resendSent = ref(false)
 
 // Clear previous errors when mounting
-onMounted(() => { authStore.error = null })
+onMounted(() => {
+  authStore.error = null
+  authStore.unverifiedEmail = null
+})
 
 async function handleLogin() {
+  resendSent.value = false
   const ok = await authStore.login(form.value)
   if (ok) {
     const redirect = route.query.redirect || '/'
     router.push(redirect)
   }
+}
+
+async function handleResend() {
+  resendSent.value = await authStore.resendVerification(authStore.unverifiedEmail)
 }
 </script>

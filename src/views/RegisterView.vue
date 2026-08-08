@@ -3,6 +3,21 @@
     <div class="row justify-content-center">
       <div class="col-12 col-sm-10 col-md-7 col-lg-5">
         <div class="card shadow-sm border-0 p-4">
+
+          <!-- Success state -->
+          <div v-if="registered" class="text-center py-3">
+            <i class="bi bi-envelope-check-fill fs-1" style="color:var(--ah-primary)"></i>
+            <h3 class="fw-bold mt-3">Check your email</h3>
+            <p class="text-muted">
+              We've sent a verification link to <strong>{{ form.email }}</strong>.
+              Verify your account to sign in.
+            </p>
+            <RouterLink :to="{ name: 'login' }" class="btn btn-outline-primary mt-2">
+              <i class="bi bi-arrow-left me-1"></i>Back to Sign In
+            </RouterLink>
+          </div>
+
+          <template v-else>
           <div class="text-center mb-4">
             <i class="bi bi-person-plus-fill fs-1" style="color:var(--ah-primary)"></i>
             <h2 class="fw-bold mt-2 mb-0">Create Account</h2>
@@ -94,6 +109,7 @@
             Already have an account?
             <RouterLink :to="{ name: 'login' }" class="fw-semibold">Sign in</RouterLink>
           </div>
+          </template>
         </div>
       </div>
     </div>
@@ -102,10 +118,8 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
-const router    = useRouter()
 const authStore = useAuthStore()
 
 const form = ref({
@@ -115,8 +129,9 @@ const form = ref({
   password: '',
   password_confirmation: ''
 })
-const showPass = ref(false)
-const agreed   = ref(false)
+const showPass   = ref(false)
+const agreed     = ref(false)
+const registered = ref(false)
 
 onMounted(() => { authStore.error = null })
 
@@ -138,6 +153,6 @@ const strengthLabel  = computed(() => ['', 'Weak', 'Fair', 'Good', 'Strong'][pas
 async function handleRegister() {
   if (form.value.password !== form.value.password_confirmation) return
   const ok = await authStore.register(form.value)
-  if (ok) router.push({ name: 'home' })
+  if (ok) registered.value = true
 }
 </script>
