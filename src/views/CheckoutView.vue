@@ -75,8 +75,8 @@
         <div v-if="currentStep === 1">
           <h5 class="fw-bold mb-3"><i class="bi bi-credit-card me-2 text-primary"></i>Payment Details</h5>
           <div class="alert alert-info d-flex align-items-center gap-2 mb-4 py-2">
-            <i class="bi bi-info-circle-fill"></i>
-            <span class="small">This is a demo checkout. No real payment is processed.</span>
+            <i class="bi bi-shield-lock-fill"></i>
+            <span class="small">Payment is processed securely by Stripe. Your card details never touch our servers.</span>
           </div>
 
           <form @submit.prevent="placeOrder" class="row g-3">
@@ -85,27 +85,8 @@
               <input v-model="payment.name" type="text" class="form-control" placeholder="John Doe" required />
             </div>
             <div class="col-12">
-              <label class="form-label">Card Number</label>
-              <div class="input-group">
-                <input
-                  v-model="payment.card"
-                  type="text"
-                  class="form-control"
-                  placeholder="4242 4242 4242 4242"
-                  maxlength="19"
-                  @input="formatCard"
-                  required
-                />
-                <span class="input-group-text"><i class="bi bi-credit-card"></i></span>
-              </div>
-            </div>
-            <div class="col-7">
-              <label class="form-label">Expiry Date</label>
-              <input v-model="payment.expiry" type="text" class="form-control" placeholder="MM / YY" maxlength="7" required />
-            </div>
-            <div class="col-5">
-              <label class="form-label">CVV</label>
-              <input v-model="payment.cvv" type="text" class="form-control" placeholder="123" maxlength="4" required />
+              <label class="form-label">Card Details</label>
+              <div ref="cardElementRef" class="form-control" style="height:auto;padding:0.65rem 0.75rem"></div>
             </div>
 
             <div v-if="orderError" class="col-12">
@@ -174,8 +155,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
+import { loadStripe } from '@stripe/stripe-js'
 import { useCartStore } from '@/stores/cart'
 import { useUiStore } from '@/stores/ui'
 import { ordersApi } from '@/api/orders'
@@ -194,12 +176,26 @@ const shipping = ref({
   city: '', state: '', zip: '', country: 'US', phone: ''
 })
 
-const payment = ref({ name: '', card: '', expiry: '', cvv: '' })
+const payment = ref({ name: '' })
 
-function formatCard(e) {
-  let v = e.target.value.replace(/\D/g, '').substring(0, 16)
-  payment.value.card = v.replace(/(.{4})/g, '$1 ').trim()
-}
+// ── Stripe Elements ──────────────────────────────────────────────────────────
+const cardElementRef = ref(null)
+let stripe = null
+let cardElement = null
+
+watch(currentStep, async (step) => {
+  if (step === 1 && !cardElement) {
+    stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
+    const elements = stripe.elements()
+    cardElement = elements.create('card')
+    await nextTick()
+    cardElement.mount(cardElementRef.value)
+  }
+})
+
+onBeforeUnmount(() => {
+  cardElement?.unmount()
+})
 
 async function placeOrder() {
   placing.value = true
@@ -216,9 +212,32 @@ async function placeOrder() {
       coupon_code: cartStore.coupon?.code,
       total: cartStore.total
     }
-    const { data } = await ordersApi.createOrder(payload)
+    const { data: order } = await ordersApi.createOrder(payload)
+    const orderId = order.id || order.order_id
+
+    const { data: intent } = await ordersApi.createPaymentIntent({
+      amount: cartStore.total,
+      order_id: orderId
+    })
+
+    const { error, paymentIntent } = await stripe.confirmCardPayment(intent.client_secret, {
+      payment_method: {
+        card: cardElement,
+        billing_details: { name: payment.value.name }
+      }
+    })
+
+    if (error) {
+      orderError.value = error.message
+      return
+    }
+
+    if (paymentIntent.status === 'succeeded') {
+      await ordersApi.confirmPayment(orderId, { payment_intent_id: paymentIntent.id })
+    }
+
     await cartStore.clearCart()
-    router.push({ name: 'order-confirmation', params: { id: data.id || data.order_id } })
+    router.push({ name: 'order-confirmation', params: { id: orderId } })
   } catch (err) {
     orderError.value = err.response?.data?.message || 'Failed to place order. Please try again.'
   } finally {
