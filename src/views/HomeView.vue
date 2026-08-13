@@ -338,7 +338,7 @@ function setupReveal() {
 onMounted(async () => {
   startTimer()
   setTimeout(setupReveal, 60)
-  await Promise.all([productsStore.fetchFeatured(), productsStore.fetchCategories()])
+  await Promise.all([productsStore.fetchFeatured(), productsStore.fetchCategories(), hpStore.fetchConfig()])
   await nextTick()
   setupReveal()
 })

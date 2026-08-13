@@ -176,14 +176,7 @@ const productsStore = useProductsStore()
 
 const showMobileFilters = ref(false)
 
-const CATEGORIES = [
-  { name: 'Cases',             slug: 'cases' },
-  { name: 'Chargers',          slug: 'chargers' },
-  { name: 'Earbuds',           slug: 'earbuds' },
-  { name: 'Screen Protectors', slug: 'screen-protectors' },
-  { name: 'Mounts',            slug: 'mounts' },
-  { name: 'Cables',            slug: 'cables' },
-]
+const CATEGORIES = computed(() => productsStore.categories)
 
 const localFilters = ref({
   category:  '',
@@ -194,7 +187,7 @@ const localFilters = ref({
 })
 
 const activeCategory = computed(() =>
-  CATEGORIES.find(c => c.slug === productsStore.activeFilters.category)
+  CATEGORIES.value.find(c => c.slug === productsStore.activeFilters.category)
 )
 
 const hasActiveFilters = computed(() => {
@@ -244,5 +237,6 @@ watch(() => route.query, () => {
 onMounted(() => {
   syncFromRoute()
   productsStore.fetchProducts()
+  if (!productsStore.categories.length) productsStore.fetchCategories()
 })
 </script>

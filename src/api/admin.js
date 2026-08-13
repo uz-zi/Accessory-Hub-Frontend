@@ -48,7 +48,7 @@ export const adminApi = {
 
   // Homepage config
   getHomepageConfig: () =>
-    api.get('/admin/homepage'),
+    api.get('/homepage'),
   updateHomepageSlides: (slides) =>
     api.put('/admin/homepage/slides', { slides }),
   updateHomepageCategories: (categories) =>
